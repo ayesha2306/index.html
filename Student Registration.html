@@ -1,0 +1,350 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Student Registration</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout: split page. Left rail introduces the intake and what to have ready; right column holds the form, which swaps to a receipt after submit. */
+  :root {
+    --bg: #eef1fb;
+    --surface: #ffffff;
+    --ink: #14204f;
+    --muted: #55608a;
+    --line: #d5dbf0;
+    --accent: #2743e6;
+    --accent-ink: #ffffff;
+    --rail: #14204f;
+    --rail-ink: #e9edff;
+    --rail-muted: #a5b0e0;
+    --ok: #137a4b;
+    --ok-bg: #e3f5ec;
+    --err: #b3261e;
+    --focus: #2743e6;
+    --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+    --font-body: "DM Sans", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "DM Mono", ui-monospace, Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0d1226; --surface: #151c38; --ink: #e9edff; --muted: #9aa5d3; --line: #28325c;
+      --accent: #7f93ff; --accent-ink: #0d1226; --rail: #0a0f20; --rail-ink: #e9edff; --rail-muted: #8f9acb;
+      --ok: #62d49b; --ok-bg: #12301f; --err: #ff8a80; --focus: #7f93ff; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0d1226; --surface: #151c38; --ink: #e9edff; --muted: #9aa5d3; --line: #28325c;
+    --accent: #7f93ff; --accent-ink: #0d1226; --rail: #0a0f20; --rail-ink: #e9edff; --rail-muted: #8f9acb;
+    --ok: #62d49b; --ok-bg: #12301f; --err: #ff8a80; --focus: #7f93ff; color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.5;
+    padding-block: 32px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+
+  .shell {
+    max-width: 960px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(20, 32, 79, 0.16);
+  }
+  @media (max-width: 760px) { .shell { grid-template-columns: minmax(0, 1fr); } }
+
+  .rail {
+    background: var(--rail);
+    color: var(--rail-ink);
+    padding: 36px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    min-width: 0;
+  }
+  .kicker {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--rail-muted);
+  }
+  .rail h1 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(28px, 4.2vw, 38px);
+    line-height: 1.1;
+    margin: 8px 0 0;
+    text-wrap: balance;
+  }
+  .rail p { margin: 0; color: var(--rail-muted); max-width: 40ch; }
+  .ready h2 {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--rail-muted);
+    margin: 0 0 10px;
+  }
+  .ready ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .ready li { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 10px; font-size: 15px; }
+  .ready li::before { content: ""; width: 8px; height: 8px; margin-top: 8px; background: var(--rail-muted); border-radius: 1px; }
+  .courses { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+  .courses li { font-family: var(--font-mono); font-size: 12px; padding: 3px 9px; border: 1px solid var(--rail-muted); border-radius: 99px; color: var(--rail-ink); display: block; }
+  .courses li::before { display: none; }
+
+  .panel { background: var(--surface); padding: 36px 32px; min-width: 0; }
+  @media (max-width: 480px) { .panel, .rail { padding: 28px 20px; } }
+  .panel h2 { font-family: var(--font-display); font-size: 24px; margin: 0 0 4px; }
+  .panel .sub { color: var(--muted); margin: 0 0 22px; font-size: 14px; }
+
+  form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 14px; }
+  .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .field.full { grid-column: 1 / -1; }
+  @media (max-width: 480px) { .field { grid-column: 1 / -1; } }
+  label { font-size: 13px; font-weight: 600; }
+  .hint { font-size: 12px; color: var(--muted); }
+  input, select, textarea {
+    width: 100%;
+    font: inherit;
+    color: var(--ink);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px 12px;
+    min-height: 44px;
+  }
+  textarea { resize: vertical; min-height: 88px; }
+  input::placeholder, textarea::placeholder { color: var(--muted); opacity: 0.8; }
+  input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 1px;
+  }
+  input.touched:invalid, select.touched:invalid, textarea.touched:invalid { border-color: var(--err); }
+  .error { font-size: 12px; color: var(--err); min-height: 0; }
+
+  .actions { grid-column: 1 / -1; display: flex; gap: 10px; margin-top: 6px; flex-wrap: wrap; }
+  button {
+    font: inherit;
+    font-weight: 600;
+    min-height: 46px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    cursor: pointer;
+  }
+  .primary { background: var(--accent); color: var(--accent-ink); flex: 1 1 160px; }
+  .primary:hover { filter: brightness(1.08); }
+  .ghost { background: transparent; color: var(--ink); border-color: var(--line); flex: 0 1 120px; }
+  .ghost:hover { background: var(--bg); }
+
+  .receipt { display: grid; gap: 18px; }
+  .receipt[hidden], form[hidden] { display: none !important; }
+  .banner { background: var(--ok-bg); color: var(--ok); border-radius: 10px; padding: 14px 16px; font-weight: 600; }
+  .banner small { display: block; font-weight: 400; margin-top: 2px; }
+  .regid { font-family: var(--font-mono); font-size: 13px; color: var(--muted); }
+  dl { margin: 0; display: grid; grid-template-columns: minmax(0, 120px) minmax(0, 1fr); gap: 10px 14px; font-size: 15px; }
+  dt { color: var(--muted); font-size: 13px; padding-top: 2px; }
+  dd { margin: 0; overflow-wrap: anywhere; }
+  .receipt dl { border-top: 1px solid var(--line); padding-top: 16px; }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+<main class="shell">
+  <aside class="rail">
+    <div>
+      <div class="kicker">Admissions desk · 2026–27</div>
+      <h1>Student Registration</h1>
+    </div>
+    <p>Fill in the form once. You will get a registration ID to quote when you visit the office.</p>
+    <section class="ready">
+      <h2>Keep ready</h2>
+      <ul>
+        <li>Your roll number as printed on the admit card</li>
+        <li>An email address you check daily</li>
+        <li>A 10-digit mobile number</li>
+        <li>Your current postal address</li>
+      </ul>
+    </section>
+    <section class="ready">
+      <h2>Courses open</h2>
+      <ul class="courses">
+        <li>B.Tech</li><li>B.Sc</li><li>B.Com</li><li>BCA</li><li>MBA</li>
+      </ul>
+    </section>
+  </aside>
+
+  <section class="panel">
+    <div id="formView">
+      <h2>Your details</h2>
+      <p class="sub">All fields are required.</p>
+
+      <form id="studentForm" novalidate>
+        <div class="field full">
+          <label for="name">Student name</label>
+          <input type="text" id="name" name="name" placeholder="e.g. Anushka Gangishetti" autocomplete="name" required>
+          <span class="error" data-for="name"></span>
+        </div>
+
+        <div class="field">
+          <label for="roll">Roll number</label>
+          <input type="text" id="roll" name="roll" placeholder="e.g. 26BCA014" autocapitalize="characters" required>
+          <span class="error" data-for="roll"></span>
+        </div>
+
+        <div class="field">
+          <label for="phone">Phone number</label>
+          <input type="tel" id="phone" name="phone" placeholder="10 digits" inputmode="numeric" maxlength="10" pattern="[0-9]{10}" autocomplete="tel-national" required>
+          <span class="error" data-for="phone"></span>
+        </div>
+
+        <div class="field full">
+          <label for="email">Email address</label>
+          <input type="email" id="email" name="email" placeholder="name@example.com" autocomplete="email" required>
+          <span class="error" data-for="email"></span>
+        </div>
+
+        <div class="field">
+          <label for="gender">Gender</label>
+          <select id="gender" name="gender" required>
+            <option value="">Select gender</option>
+            <option>Male</option>
+            <option>Female</option>
+            <option>Other</option>
+          </select>
+          <span class="error" data-for="gender"></span>
+        </div>
+
+        <div class="field">
+          <label for="course">Course</label>
+          <select id="course" name="course" required>
+            <option value="">Select course</option>
+            <option>B.Tech</option>
+            <option>B.Sc</option>
+            <option>B.Com</option>
+            <option>BCA</option>
+            <option>MBA</option>
+          </select>
+          <span class="error" data-for="course"></span>
+        </div>
+
+        <div class="field full">
+          <label for="address">Address</label>
+          <textarea id="address" name="address" placeholder="House no., street, city, PIN code" autocomplete="street-address" required></textarea>
+          <span class="error" data-for="address"></span>
+        </div>
+
+        <div class="actions">
+          <button type="submit" class="primary">Register</button>
+          <button type="reset" class="ghost">Reset</button>
+        </div>
+      </form>
+    </div>
+
+    <div id="receipt" class="receipt" hidden aria-live="polite">
+      <div class="banner">
+        <span id="welcome"></span>
+        <small>Registration successful.</small>
+      </div>
+      <div class="regid">Registration ID: <strong id="regid"></strong></div>
+      <dl id="summary"></dl>
+      <div class="actions" style="grid-column:auto">
+        <button type="button" class="primary" id="another">Register another student</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+  (function () {
+    var form = document.getElementById("studentForm");
+    var formView = document.getElementById("formView");
+    var receipt = document.getElementById("receipt");
+    var fields = Array.prototype.slice.call(form.querySelectorAll("input, select, textarea"));
+
+    var messages = {
+      name: "Enter the student's full name.",
+      roll: "Enter the roll number.",
+      email: "Enter a valid email address, like name@example.com.",
+      phone: "Enter exactly 10 digits, numbers only.",
+      gender: "Choose an option.",
+      course: "Choose a course.",
+      address: "Enter the full postal address."
+    };
+
+    function errorEl(id) { return form.querySelector('.error[data-for="' + id + '"]'); }
+
+    function check(el) {
+      var ok = el.value.trim() !== "" && el.checkValidity();
+      errorEl(el.id).textContent = ok ? "" : messages[el.id];
+      return ok;
+    }
+
+    fields.forEach(function (el) {
+      el.addEventListener("blur", function () { el.classList.add("touched"); check(el); });
+      el.addEventListener("input", function () { if (el.classList.contains("touched")) check(el); });
+    });
+
+    document.getElementById("phone").addEventListener("input", function (e) {
+      e.target.value = e.target.value.replace(/\D/g, "").slice(0, 10);
+    });
+    document.getElementById("roll").addEventListener("input", function (e) {
+      e.target.value = e.target.value.toUpperCase().replace(/\s/g, "");
+    });
+
+    function text(tag, value, parent) {
+      var n = document.createElement(tag);
+      n.textContent = value;
+      parent.appendChild(n);
+    }
+
+    form.addEventListener("submit", function (event) {
+      event.preventDefault();
+      var firstBad = null;
+      fields.forEach(function (el) {
+        el.classList.add("touched");
+        if (!check(el) && !firstBad) firstBad = el;
+      });
+      if (firstBad) { firstBad.focus(); return; }
+
+      var v = {};
+      fields.forEach(function (el) { v[el.id] = el.value.trim(); });
+
+      document.getElementById("welcome").textContent = "Welcome, " + v.name + ". You are registered for " + v.course + ".";
+      document.getElementById("regid").textContent = "REG-2026-" + String(Math.floor(1000 + Math.random() * 9000));
+
+      var dl = document.getElementById("summary");
+      dl.textContent = "";
+      [["Name", v.name], ["Roll number", v.roll], ["Email", v.email], ["Phone", v.phone],
+       ["Gender", v.gender], ["Course", v.course], ["Address", v.address]].forEach(function (row) {
+        text("dt", row[0], dl);
+        text("dd", row[1], dl);
+      });
+
+      formView.hidden = true;
+      receipt.hidden = false;
+      receipt.scrollIntoView({ block: "start" });
+    });
+
+    form.addEventListener("reset", function () {
+      fields.forEach(function (el) { el.classList.remove("touched"); errorEl(el.id).textContent = ""; });
+    });
+
+    document.getElementById("another").addEventListener("click", function () {
+      form.reset();
+      receipt.hidden = true;
+      formView.hidden = false;
+      document.getElementById("name").focus();
+    });
+  })();
+</script>
+
+</body></html>
